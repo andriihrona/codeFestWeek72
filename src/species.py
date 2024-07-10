@@ -2,9 +2,9 @@ import random
 import numpy as np
 
 class Species:
-    def __init__(self, name, allowed_heights, position, radius, color, life=100, speed=10, breeding_coefficient=1, breeding_interval=100, invalid_zone_time_limit=10):
+    def __init__(self, name, allowed_heights_range, position, radius, color, life=100, speed=10, breeding_coefficient=1, breeding_interval=100, invalid_zone_time_limit=10):
         self.name = name
-        self.allowed_heights = allowed_heights
+        self.allowed_heights_range = allowed_heights_range
         self.position = position
         self.radius = radius
         self.color = color
@@ -17,7 +17,8 @@ class Species:
         self.time_in_invalid_zone = 0
 
     def can_walk_on(self, height_value):
-        return height_value in self.allowed_heights
+        min_height, max_height = self.allowed_heights_range
+        return min_height <= height_value <= max_height
 
     def move_randomly(self, heightmap):
         height, width = heightmap.shape
@@ -58,11 +59,12 @@ class Species:
 
 class Rabbit(Species):
     def __init__(self, position, fleeing_radius=25):
-        super().__init__("Rabbit", [0], position, 8, (0, 0, 0), life=100, speed=10, breeding_coefficient=1, breeding_interval=50, invalid_zone_time_limit=10)
+        super().__init__("Rabbit", (0, 255), position, 8, (0, 0, 0), life=100, speed=10, breeding_coefficient=1, breeding_interval=50, invalid_zone_time_limit=10)
         self.fleeing_radius = fleeing_radius
 
     def flee(self, foxes, heightmap):
         height, width = heightmap.shape
+        new_position = self.position  
         for fox in foxes:
             distance = np.sqrt((self.position[0] - fox.position[0]) ** 2 + (self.position[1] - fox.position[1]) ** 2)
             if distance < self.fleeing_radius:
@@ -84,7 +86,7 @@ class Rabbit(Species):
                     self.time_in_invalid_zone = 0
                 else:
                     self.time_in_invalid_zone += 1
-                return  # Move only once to flee from the nearest fox
+                return 
         self.move_randomly(heightmap)
 
 class AdvantagedRabbit(Rabbit):
@@ -99,11 +101,12 @@ class AdvantagedRabbit(Rabbit):
 
 class Fox(Species):
     def __init__(self, position, hunting_radius=50):
-        super().__init__("Fox", [0], position, 10, (255, 0, 0), life=100, speed=15, breeding_coefficient=1, breeding_interval=60, invalid_zone_time_limit=10)
+        super().__init__("Fox", (0, 255), position, 10, (255, 0, 0), life=100, speed=15, breeding_coefficient=1, breeding_interval=60, invalid_zone_time_limit=10)
         self.hunting_radius = hunting_radius
 
     def pursue(self, rabbits, heightmap):
         height, width = heightmap.shape
+        new_position = self.position  
         for rabbit in rabbits:
             distance = np.sqrt((self.position[0] - rabbit.position[0]) ** 2 + (self.position[1] - rabbit.position[1]) ** 2)
             if distance < self.hunting_radius:

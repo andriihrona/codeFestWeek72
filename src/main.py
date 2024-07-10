@@ -3,6 +3,8 @@ import numpy as np
 import math
 from species import Rabbit, AdvantagedRabbit, Fox
 import random
+from out import get_depth, find_projector_screen, show_image_on_projector
+import cv2
 
 def check_collision(species1, species2):
     distance = math.sqrt((species1.position[0] - species2.position[0]) ** 2 +
@@ -12,42 +14,43 @@ def check_collision(species1, species2):
 def generate_colored_heightmap(heightmap):
     height, width = heightmap.shape
     colored_map = np.zeros((height, width, 3), dtype=np.uint8)
+    third_height = 255 // 3
     for i in range(height):
         for j in range(width):
             height_value = heightmap[i, j]
-            if height_value == 0:
-                colored_map[i, j] = [0, 0, 255]  # Blue for water
-            elif height_value == 11:
-                colored_map[i, j] = [139, 69, 19]  # Brown
+            if height_value < third_height:
+                colored_map[i, j] = [0, 0, 255]  # Blue for lowest third
+            elif height_value < 2 * third_height:
+                colored_map[i, j] = [139, 69, 19]  # Brown for middle third
             else:
-                colored_map[i, j] = [255, 0, 0]  # Red
+                colored_map[i, j] = [255, 1, 1]  # Red for highest third
     return colored_map
 
-def create_heightmap_with_circle(size, radius):
-    heightmap = np.full((size, size), 21, dtype=np.uint8)
-    center = size // 2
-    for i in range(size):
-        for j in range(size):
-            distance = np.sqrt((i - center) ** 2 + (j - center) ** 2)
-            if distance < radius:
-                heightmap[i, j] = 0
-            elif distance < radius * 1.5:
-                heightmap[i, j] = 11
+def normalize_heightmap(depth_map):
+    # Assuming depth_map is in RGB format, convert to grayscale
+    depth_map_gray = cv2.cvtColor(depth_map, cv2.COLOR_RGB2GRAY)
+    min_depth = np.min(depth_map_gray)
+    max_depth = np.max(depth_map_gray)
+    heightmap = ((depth_map_gray - min_depth) / (max_depth - min_depth) * 255).astype(np.uint8)
     return heightmap
 
 pygame.init()
 
-size = 640
-radius = size // 4
-heightmap = create_heightmap_with_circle(size, radius)
+# Find the projector screen size if available
+projector = find_projector_screen()
+window_size = (projector.width, projector.height)
+
+# Initialize heightmap with the first frame of depth data
+depth = get_depth()
+heightmap = normalize_heightmap(depth)
+
 colored_heightmap = generate_colored_heightmap(heightmap)
 colored_surface = pygame.surfarray.make_surface(colored_heightmap)
 
-rabbits = [Rabbit((300 + i * 20, 300)) for i in range(5)]
-advantaged_rabbits = [AdvantagedRabbit((300 + i * 20, 350)) for i in range(4)]
-foxes = [Fox((250+i*10, 200)) for i in range(2)]
+rabbits = [Rabbit((300 + i * 20, 300)) for i in range(3)]
+advantaged_rabbits = [AdvantagedRabbit((300 + i * 20, 350)) for i in range(2)]
+foxes = [Fox((250 + i * 10, 200)) for i in range(2)]
 
-window_size = (size, size)
 screen = pygame.display.set_mode(window_size)
 pygame.display.set_caption("Ecosystem Simulation")
 
@@ -85,6 +88,12 @@ while running:
 
     rabbits = [rabbit for rabbit in rabbits if not any(check_collision(rabbit, fox) for fox in foxes)]
     advantaged_rabbits = [advantaged_rabbit for advantaged_rabbit in advantaged_rabbits if not any(check_collision(advantaged_rabbit, fox) for fox in foxes)]
+
+    # Update heightmap with the latest depth data
+    depth = get_depth()
+    heightmap = normalize_heightmap(depth)
+    colored_heightmap = generate_colored_heightmap(heightmap)
+    colored_surface = pygame.surfarray.make_surface(colored_heightmap)
 
     screen.fill((0, 0, 0))
     screen.blit(colored_surface, (0, 0))

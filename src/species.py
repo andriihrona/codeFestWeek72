@@ -58,7 +58,7 @@ class Species:
 
 class Rabbit(Species):
     def __init__(self, position, fleeing_radius=25):
-        super().__init__("Rabbit", [0], position, 10, (0, 0, 0), life=100, speed=10, breeding_coefficient=1, breeding_interval=50, invalid_zone_time_limit=10)
+        super().__init__("Rabbit", [0], position, 8, (0, 0, 0), life=100, speed=10, breeding_coefficient=1, breeding_interval=50, invalid_zone_time_limit=10)
         self.fleeing_radius = fleeing_radius
 
     def flee(self, foxes, heightmap):

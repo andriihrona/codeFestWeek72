@@ -11,20 +11,15 @@ def check_collision(species1, species2):
                          (species1.position[1] - species2.position[1]) ** 2)
     return distance < (species1.radius + species2.radius)
 
-def generate_colored_heightmap(heightmap):
-    height, width = heightmap.shape
-    colored_map = np.zeros((height, width, 3), dtype=np.uint8)
-    third_height = 255 // 3
-    for i in range(height):
-        for j in range(width):
-            height_value = heightmap[i, j]
-            if height_value < third_height:
-                colored_map[i, j] = [0, 0, 255]  # Blue for lowest third
-            elif height_value < 2 * third_height:
-                colored_map[i, j] = [139, 69, 19]  # Brown for middle third
-            else:
-                colored_map[i, j] = [255, 1, 1]  # Red for highest third
-    return colored_map
+def apply_viridis_colormap(depth, min_depth=400, max_depth=550):
+    depth = np.clip(depth, min_depth, max_depth)
+    depth = ((depth - min_depth) / (max_depth - min_depth) * 255).astype(np.uint8)
+    depth_colormap = cv2.applyColorMap(depth, cv2.COLORMAP_VIRIDIS)
+    return depth_colormap
+
+def video_cv(video):
+    return video[:, :, ::-1]  # RGB -> BGR
+
 
 def normalize_heightmap(depth_map):
     if len(depth_map.shape) == 3 and depth_map.shape[2] == 3:
@@ -38,14 +33,13 @@ def normalize_heightmap(depth_map):
 
 pygame.init()
 
-# Find the projector screen size if available
 projector = find_projector_screen()
 window_size = (projector.width, projector.height)
 
 depth = get_depth()
 heightmap = normalize_heightmap(depth)
 
-colored_heightmap = generate_colored_heightmap(heightmap)
+colored_heightmap = apply_viridis_colormap(heightmap)
 colored_surface = pygame.surfarray.make_surface(colored_heightmap)
 
 rabbits = [Rabbit((300 + i * 20, 300)) for i in range(5)]
@@ -54,12 +48,6 @@ foxes = [Fox((250 + i * 10, 200)) for i in range(2)]
 
 screen = pygame.display.set_mode(window_size)
 pygame.display.set_caption("Ecosystem Simulation")
-
-# # Move window to the projector screen coordinates
-# pygame.display.set_mode(window_size, pygame.NOFRAME)
-# pygame.display.set_mode(window_size, pygame.FULLSCREEN)
-# pygame.display.set_mode((projector.width, projector.height), pygame.NOFRAME)
-# pygame.display.set_mode((projector.width, projector.height), pygame.FULLSCREEN)
 
 clock = pygame.time.Clock()
 running = True
@@ -98,7 +86,7 @@ while running:
 
     depth = get_depth()
     heightmap = normalize_heightmap(depth)
-    colored_heightmap = generate_colored_heightmap(heightmap)
+    colored_heightmap = apply_viridis_colormap(heightmap)
     colored_surface = pygame.surfarray.make_surface(colored_heightmap)
 
     screen.fill((0, 0, 0))
@@ -113,6 +101,11 @@ while running:
 
     pygame.display.flip()
     clock.tick(10)
-    show_image_on_projector(colored_heightmap, projector)
+
+    frame = pygame.surfarray.array3d(screen)
+    frame = np.rot90(frame)
+    frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
+    
+    show_image_on_projector(frame, projector)
 
 pygame.quit()

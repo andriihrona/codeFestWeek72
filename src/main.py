@@ -102,7 +102,6 @@ while running:
     clock.tick(10)
 
     frame = pygame.surfarray.array3d(screen)
-    frame = np.rot90(frame)
     frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
     
     show_image_on_projector(frame, projector)

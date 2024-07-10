@@ -99,7 +99,7 @@ class AdvantagedRabbit(Rabbit):
 
 class Fox(Species):
     def __init__(self, position, hunting_radius=50):
-        super().__init__("Fox", [0], position, 10, (255, 0, 0), life=100, speed=13, breeding_coefficient=1, breeding_interval=60, invalid_zone_time_limit=10)
+        super().__init__("Fox", [0], position, 10, (255, 0, 0), life=100, speed=15, breeding_coefficient=1, breeding_interval=60, invalid_zone_time_limit=10)
         self.hunting_radius = hunting_radius
 
     def pursue(self, rabbits, heightmap):

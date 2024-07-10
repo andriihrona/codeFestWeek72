@@ -43,7 +43,7 @@ heightmap = create_heightmap_with_circle(size, radius)
 colored_heightmap = generate_colored_heightmap(heightmap)
 colored_surface = pygame.surfarray.make_surface(colored_heightmap)
 
-rabbits = [Rabbit((300 + i * 20, 300)) for i in range(4)]
+rabbits = [Rabbit((300 + i * 20, 300)) for i in range(5)]
 advantaged_rabbits = [AdvantagedRabbit((300 + i * 20, 350)) for i in range(4)]
 foxes = [Fox((250+i*10, 200)) for i in range(2)]
 

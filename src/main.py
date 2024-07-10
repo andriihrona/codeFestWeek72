@@ -3,7 +3,7 @@ import numpy as np
 import math
 from species import Rabbit, AdvantagedRabbit, Fox
 import random
-from out import get_depth, find_projector_screen
+from out import get_depth, find_projector_screen, show_image_on_projector
 import cv2
 
 def check_collision(species1, species2):
@@ -55,11 +55,11 @@ foxes = [Fox((250 + i * 10, 200)) for i in range(2)]
 screen = pygame.display.set_mode(window_size)
 pygame.display.set_caption("Ecosystem Simulation")
 
-# Move window to the projector screen coordinates
-pygame.display.set_mode(window_size, pygame.NOFRAME)
-pygame.display.set_mode(window_size, pygame.FULLSCREEN)
-pygame.display.set_mode((projector.width, projector.height), pygame.NOFRAME)
-pygame.display.set_mode((projector.width, projector.height), pygame.FULLSCREEN)
+# # Move window to the projector screen coordinates
+# pygame.display.set_mode(window_size, pygame.NOFRAME)
+# pygame.display.set_mode(window_size, pygame.FULLSCREEN)
+# pygame.display.set_mode((projector.width, projector.height), pygame.NOFRAME)
+# pygame.display.set_mode((projector.width, projector.height), pygame.FULLSCREEN)
 
 clock = pygame.time.Clock()
 running = True
@@ -113,5 +113,6 @@ while running:
 
     pygame.display.flip()
     clock.tick(10)
+    show_image_on_projector(colored_heightmap, projector)
 
 pygame.quit()

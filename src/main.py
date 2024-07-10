@@ -3,7 +3,7 @@ import numpy as np
 import math
 from species import Rabbit, AdvantagedRabbit, Fox
 import random
-from out import get_depth, find_projector_screen, show_image_on_projector
+from out import get_depth, find_projector_screen
 import cv2
 
 def check_collision(species1, species2):
@@ -27,8 +27,10 @@ def generate_colored_heightmap(heightmap):
     return colored_map
 
 def normalize_heightmap(depth_map):
-    # Assuming depth_map is in RGB format, convert to grayscale
-    depth_map_gray = cv2.cvtColor(depth_map, cv2.COLOR_RGB2GRAY)
+    if len(depth_map.shape) == 3 and depth_map.shape[2] == 3:
+        depth_map_gray = cv2.cvtColor(depth_map, cv2.COLOR_RGB2GRAY)
+    else:
+        depth_map_gray = depth_map
     min_depth = np.min(depth_map_gray)
     max_depth = np.max(depth_map_gray)
     heightmap = ((depth_map_gray - min_depth) / (max_depth - min_depth) * 255).astype(np.uint8)
@@ -40,7 +42,6 @@ pygame.init()
 projector = find_projector_screen()
 window_size = (projector.width, projector.height)
 
-# Initialize heightmap with the first frame of depth data
 depth = get_depth()
 heightmap = normalize_heightmap(depth)
 
@@ -54,15 +55,11 @@ foxes = [Fox((250 + i * 10, 200)) for i in range(2)]
 screen = pygame.display.set_mode(window_size)
 pygame.display.set_caption("Ecosystem Simulation")
 
-
-# # Move window to the projector screen coordinates
-
-# pygame.display.set_mode(window_size, pygame.NOFRAME)
-# pygame.display.set_mode(window_size, pygame.FULLSCREEN)
-# pygame.display.set_mode((projector.width, projector.height), pygame.NOFRAME)
-# pygame.display.set_mode((projector.width, projector.height), pygame.FULLSCREEN)
-
-
+# Move window to the projector screen coordinates
+pygame.display.set_mode(window_size, pygame.NOFRAME)
+pygame.display.set_mode(window_size, pygame.FULLSCREEN)
+pygame.display.set_mode((projector.width, projector.height), pygame.NOFRAME)
+pygame.display.set_mode((projector.width, projector.height), pygame.FULLSCREEN)
 
 clock = pygame.time.Clock()
 running = True
@@ -93,13 +90,12 @@ while running:
         species_list.extend(new_offsprings)
 
     breed_species(rabbits)
-    breed_species(advantaged_rabbits)
     breed_species(foxes)
+    breed_species(advantaged_rabbits)
 
     rabbits = [rabbit for rabbit in rabbits if not any(check_collision(rabbit, fox) for fox in foxes)]
     advantaged_rabbits = [advantaged_rabbit for advantaged_rabbit in advantaged_rabbits if not any(check_collision(advantaged_rabbit, fox) for fox in foxes)]
 
-    # Update heightmap with the latest depth data
     depth = get_depth()
     heightmap = normalize_heightmap(depth)
     colored_heightmap = generate_colored_heightmap(heightmap)

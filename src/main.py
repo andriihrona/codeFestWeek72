@@ -54,6 +54,16 @@ foxes = [Fox((250 + i * 10, 200)) for i in range(2)]
 screen = pygame.display.set_mode(window_size)
 pygame.display.set_caption("Ecosystem Simulation")
 
+
+# # Move window to the projector screen coordinates
+
+# pygame.display.set_mode(window_size, pygame.NOFRAME)
+# pygame.display.set_mode(window_size, pygame.FULLSCREEN)
+# pygame.display.set_mode((projector.width, projector.height), pygame.NOFRAME)
+# pygame.display.set_mode((projector.width, projector.height), pygame.FULLSCREEN)
+
+
+
 clock = pygame.time.Clock()
 running = True
 while running:

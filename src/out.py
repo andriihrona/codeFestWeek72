@@ -92,8 +92,8 @@ def apply_colormap(depth, min_depth=0, max_depth=255):
   #  colormap[blue_threshold:green_threshold, 0, 1] = 255 #Vert
  #   colormap[green_threshold:, 0, 2] = 255 #Rouge
 
-    depth_colormap = cv2.applyColorMap(depth, cv2.COLORMAP_TURBO)
-    depth_colormap = depth_colormap[:, :, [0, 1, 2]]
+    depth_colormap = cv2.applyColorMap(depth, cv2.COLORMAP_JET)
+    depth_colormap = depth_colormap[:, :, [0, 2, 1]]
     return depth_colormap
 
 if __name__ == "__main__":

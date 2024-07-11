@@ -25,6 +25,21 @@ def normalize_and_apply_colormap(depth, min_depth=400, max_depth=550):
     depth_colormap = cv2.applyColorMap(depth_normalized, colormap)
     return depth_colormap
 
+def apply_colormap(depth, min_depth, max_depth, mean):
+    depth = np.clip(depth.astype(np.uint8), min_depth, max_depth)
+    depth = ((depth - min_depth) / (max_depth - min_depth) * 255).astype(np.uint8)
+
+    blue_threshold = int(mean + min_depth / 3)
+    green_threshold = int(mean + max_depth / 2)
+
+    colormap = np.zeros((256, 1, 3), dtype=np.uint8)
+    colormap[:blue_threshold, 0, 2] = 255 #Bleu
+    colormap[blue_threshold:green_threshold, 0, 1] = 255 #Vert
+    colormap[green_threshold:, 0, 0] = 255 #Rouge
+
+    depth_colormap = cv2.applyColorMap(depth, colormap)
+    return depth_colormap 
+
 def video_cv(video):
     return video[:, :, ::-1]  # RGB -> BGR
 

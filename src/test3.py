@@ -2,6 +2,10 @@ import pygame
 import numpy as np
 import random
 import math
+from out import get_depth, find_projector_screen, show_image_on_projector, apply_colormap, normalise_depth
+
+WIDTH = 480
+HEIGHT = 480
 
 class Species:
     def __init__(self, name, allowed_heights_range, position, radius, color, life=100, speed=10, breeding_coefficient=1, breeding_interval=100, invalid_zone_time_limit=1000):
@@ -96,6 +100,11 @@ class Rabbit(Species):
         x, y = self.position
 
         # Adjust speed based on terrain type
+        if y > WIDTH:
+            y = WIDTH - 1
+        if x > HEIGHT:
+            x = HEIGHT - 1
+
         current_height_value = heightmap[y, x]
         if current_height_value == 2:  # Mountain terrain
             speed = 15
@@ -117,7 +126,11 @@ class Rabbit(Species):
             new_position = self.position
 
         new_x, new_y = new_position
-        if self.can_walk_on(heightmap[new_x, new_y]):
+        if new_x > WIDTH:
+            new_x = WIDTH - 1
+        if new_y > HEIGHT:
+            new_y = HEIGHT - 1
+        if self.can_walk_on(heightmap[new_y, new_x]):
             self.position = new_position
             self.time_in_invalid_zone = 0  # Reset timer when moving to a valid zone
         else:
@@ -215,9 +228,9 @@ def create_heightmap_with_middle_band(size, radius):
 
     return heightmap
 
+projector = find_projector_screen()
 
 pygame.init()
-
 
 MAX_RABBITS = 50
 MAX_ADVANTAGED_RABBITS = 50
@@ -225,8 +238,13 @@ MAX_FOXES = 10
 
 size = 1000
 radius = size // 3
-heightmap = create_heightmap_with_circle(size, radius)
-colored_heightmap = generate_colored_heightmap(heightmap)
+
+depth = get_depth()
+colored_heightmap = apply_colormap(depth)
+
+# heightmap = create_heightmap_with_circle(size, radius)
+# colored_heightmap = generate_colored_heightmap(heightmap)
+
 colored_surface = pygame.surfarray.make_surface(colored_heightmap)
 
 rabbits = [Rabbit((500 + i * 20, 400)) for i in range(10)] #10
@@ -240,6 +258,10 @@ pygame.display.set_caption("Ecosystem Simulation")
 clock = pygame.time.Clock()
 running = True
 while running:
+    depth = get_depth()
+    heightmap = normalise_depth(depth)
+    colored_heightmap = apply_colormap(depth)
+
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
@@ -247,7 +269,6 @@ while running:
     rabbits = [rabbit for rabbit in rabbits if not rabbit.age()]
     advantaged_rabbits = [advantaged_rabbit for advantaged_rabbit in advantaged_rabbits if not advantaged_rabbit.age()]
     foxes = [fox for fox in foxes if not fox.age()]
-
 
     for fox in foxes:
         fox.pursue(rabbits, heightmap)
@@ -260,16 +281,15 @@ while running:
     for fox in foxes:
         fox.pursue(rabbits + advantaged_rabbits, heightmap)
 
-    rabbit_icon = pygame.image.load("/Users/admin/Desktop/Epita/COFE/whiterabbit.png")
+    rabbit_icon = pygame.image.load("/home/thomas/work/CodeFest/codeFestWeek72/src/whiterabbit.png")
     rabbit_icon = pygame.transform.scale(rabbit_icon, (20, 20))
 
-    advantaged_rabbit_icon = pygame.image.load("/Users/admin/Desktop/Epita/COFE/blackrabbit.png")
+    advantaged_rabbit_icon = pygame.image.load("/home/thomas/work/CodeFest/codeFestWeek72/src/blackrabbit.png")
     advantaged_rabbit_icon = pygame.transform.scale(advantaged_rabbit_icon, (20, 20))
 
-    fox_icon = pygame.image.load("/Users/admin/Desktop/Epita/COFE/fox3.png")
+    fox_icon = pygame.image.load("/home/thomas/work/CodeFest/codeFestWeek72/src/fox3.png")
     fox_icon = pygame.transform.scale(fox_icon, (20, 20))
 
-    
     new_rabbits = []
     new_advantaged_rabbits = []
     new_foxes = []
@@ -312,5 +332,8 @@ while running:
 
     pygame.display.flip()
     clock.tick(100)
+
+    show_image_on_projector(colored_heightmap, projector)
+
 
 pygame.quit()

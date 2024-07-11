@@ -41,7 +41,7 @@ class Species:
             new_position = self.position
 
         new_x, new_y = new_position
-        if self.can_walk_on(heightmap[new_y, new_x]):
+        if self.can_walk_on(heightmap[new_x, new_y]):
             self.position = new_position
             self.time_in_invalid_zone = 0  # Reset timer when moving to a valid zone
         else:
@@ -83,7 +83,7 @@ class Rabbit(Species):
                     new_position = (rx, ry + self.speed)
 
                 new_x, new_y = new_position
-                if self.can_walk_on(heightmap[new_y, new_x]):
+                if self.can_walk_on(heightmap[new_x, new_y]):
                     self.position = new_position
                     self.time_in_invalid_zone = 0
                 else:
@@ -117,7 +117,7 @@ class Rabbit(Species):
             new_position = self.position
 
         new_x, new_y = new_position
-        if self.can_walk_on(heightmap[new_y, new_x]):
+        if self.can_walk_on(heightmap[new_x, new_y]):
             self.position = new_position
             self.time_in_invalid_zone = 0  # Reset timer when moving to a valid zone
         else:
@@ -157,7 +157,7 @@ class Fox(Species):
                     new_position = (fx, fy - self.speed)
 
                 new_x, new_y = new_position
-                if self.can_walk_on(heightmap[new_y, new_x]):
+                if self.can_walk_on(heightmap[new_x, new_y]):
                     self.position = new_position
                     self.time_in_invalid_zone = 0
                 else:
@@ -196,6 +196,26 @@ def create_heightmap_with_circle(size, radius):
                 heightmap[i, j] = 1
     return heightmap
 
+def create_heightmap_with_middle_band(size, radius):
+    heightmap = np.full((size, size), 1, dtype=np.uint8)
+    center = size // 2
+    band_width = size // 10  # Calculate the band width as 1/10 of the size
+    band_start = center - band_width // 2
+    band_end = center + band_width // 2
+
+    for i in range(size):
+        for j in range(size):
+            distance = np.sqrt((i - center) ** 2 + (j - center) ** 2)
+            if band_start <= j < band_end:  # Create the mountain band in the middle
+                heightmap[i, j] = 2
+            elif distance < radius * 0.9:
+                heightmap[i, j] = 2
+            elif distance < radius * 1.4:
+                heightmap[i, j] = 1
+
+    return heightmap
+
+
 pygame.init()
 
 
@@ -209,8 +229,8 @@ heightmap = create_heightmap_with_circle(size, radius)
 colored_heightmap = generate_colored_heightmap(heightmap)
 colored_surface = pygame.surfarray.make_surface(colored_heightmap)
 
-rabbits = [Rabbit((500 + i * 20, 400)) for i in range(10)]
-advantaged_rabbits = [AdvantagedRabbit((400 + i * 20, 500)) for i in range(8)]
+rabbits = [Rabbit((500 + i * 20, 400)) for i in range(10)] #10
+advantaged_rabbits = [AdvantagedRabbit((400 + i * 20, 500)) for i in range(8)] #8
 foxes = [Fox((250-i*50, 300)) for i in range(2)]
 
 window_size = (size, size)
@@ -230,8 +250,8 @@ while running:
 
 
     for fox in foxes:
-            fox.pursue(rabbits, heightmap)
-            fox.pursue(advantaged_rabbits, heightmap)
+        fox.pursue(rabbits, heightmap)
+        fox.pursue(advantaged_rabbits, heightmap)
 
     for rabbit in rabbits:
         rabbit.flee(foxes, heightmap)
@@ -263,21 +283,9 @@ while running:
                 new_offsprings.extend([species.breed() for _ in range(species.breeding_coefficient)])
         species_list.extend(new_offsprings)
 
-    # breed_species(rabbits, MAX_RABBITS)
-    # breed_species(foxes, MAX_FOXES)
-    # breed_species(advantaged_rabbits, MAX_ADVANTAGED_RABBITS)
-
-    def breed_species(species_list):
-        new_offsprings = []
-        num_to_breed = len(species_list) // 2
-        breeders = random.sample(species_list, num_to_breed)
-        for species in breeders:
-            if species.can_breed():
-                new_offsprings.extend([species.breed() for _ in range(species.breeding_coefficient)])
-        species_list.extend(new_offsprings)
-    breed_species(rabbits)
-    breed_species(foxes)
-    breed_species(advantaged_rabbits)
+    breed_species(rabbits, MAX_RABBITS)
+    breed_species(foxes, MAX_FOXES)
+    breed_species(advantaged_rabbits, MAX_ADVANTAGED_RABBITS)
 
     rabbits.extend(new_rabbits)
     advantaged_rabbits.extend(new_advantaged_rabbits)
@@ -285,6 +293,12 @@ while running:
 
     rabbits = [rabbit for rabbit in rabbits if not any(check_collision(rabbit, fox) for fox in foxes)]
     advantaged_rabbits = [advantaged_rabbit for advantaged_rabbit in advantaged_rabbits if not any(check_collision(advantaged_rabbit, fox) for fox in foxes)]
+
+    # Add the condition to handle only foxes or only rabbits
+    if len(foxes) > 0 and len(rabbits) == 0 and len(advantaged_rabbits) == 0:
+        foxes = []  # All foxes die ENDGAME
+    elif len(foxes) == 0 and (len(rabbits) > 0 or len(advantaged_rabbits) > 0):
+        foxes.extend([Fox((random.randint(0, size), random.randint(0, size))) for _ in range(2)])  # Two foxes pop
 
     screen.fill((0, 0, 0))
     screen.blit(colored_surface, (0, 0))
@@ -297,6 +311,6 @@ while running:
         screen.blit(fox_icon, (fox.position[0] - fox.radius, fox.position[1] - fox.radius))
 
     pygame.display.flip()
-    clock.tick(10)
+    clock.tick(100)
 
 pygame.quit()

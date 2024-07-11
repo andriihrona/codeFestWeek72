@@ -4,6 +4,9 @@ import random
 import math
 from out import get_depth, find_projector_screen, show_image_on_projector, apply_colormap
 
+WIDTH = 640
+HEIGHT = 480
+
 class Species:
     def __init__(self, name, allowed_heights_range, position, radius, color, life=100, speed=10, breeding_coefficient=1, breeding_interval=100, invalid_zone_time_limit=1000):
         self.name = name
@@ -97,6 +100,11 @@ class Rabbit(Species):
         x, y = self.position
 
         # Adjust speed based on terrain type
+        if y > WIDTH:
+            y = WIDTH - 1
+        if x > HEIGHT:
+            x = HEIGHT - 1
+
         current_height_value = heightmap[y, x]
         if current_height_value == 2:  # Mountain terrain
             speed = 15
@@ -260,7 +268,6 @@ while running:
     fox_icon = pygame.image.load("/Users/admin/Desktop/Epita/COFE/fox3.png")
     fox_icon = pygame.transform.scale(fox_icon, (20, 20))
 
-    
     new_rabbits = []
     new_advantaged_rabbits = []
     new_foxes = []

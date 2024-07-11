@@ -59,7 +59,7 @@ class Species:
 
 class Rabbit(Species):
     def __init__(self, position, fleeing_radius=25):
-        super().__init__("Rabbit", (0, 255), position, 8, (0, 0, 0), life=100, speed=10, breeding_coefficient=1, breeding_interval=50, invalid_zone_time_limit=10)
+        super().__init__("Rabbit", (0, 255), position, 8, (255, 255, 255), life=80, speed=10, breeding_coefficient=1, breeding_interval=50, invalid_zone_time_limit=10)
         self.fleeing_radius = fleeing_radius
 
     def flee(self, foxes, heightmap):
@@ -93,11 +93,11 @@ class AdvantagedRabbit(Rabbit):
     def __init__(self, position, fleeing_radius=35):
         super().__init__(position, fleeing_radius)
         self.name = "Advantaged Rabbit"
-        self.color = (255, 255, 255)
-        self.life = 150
+        self.color = (0, 0, 0)
+        self.life = 90
         self.speed = 12
         self.breeding_coefficient = 1
-        self.breeding_interval = 40
+        self.breeding_interval = 45
 
 class Fox(Species):
     def __init__(self, position, hunting_radius=50):

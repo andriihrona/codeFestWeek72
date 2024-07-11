@@ -11,10 +11,22 @@ def check_collision(species1, species2):
                          (species1.position[1] - species2.position[1]) ** 2)
     return distance < (species1.radius + species2.radius)
 
-def apply_viridis_colormap(depth, min_depth=400, max_depth=550):
+def apply_custom_colormap(depth, min_depth=400, max_depth=550):
     depth = np.clip(depth.astype(np.float32), min_depth, max_depth)
     depth = ((depth - min_depth) / (max_depth - min_depth) * 255).astype(np.uint8)
-    depth_colormap = cv2.applyColorMap(depth, cv2.COLORMAP_VIRIDIS)
+    
+    colormap = np.zeros((256, 1, 3), dtype=np.uint8)
+    for i in range(256):
+        if i < 128:
+            colormap[i, 0, 0] = 255 - 2 * i  # Red decreases
+            colormap[i, 0, 1] = 2 * i        # Green increases
+            colormap[i, 0, 2] = 255          # Blue stays at max
+        else:
+            colormap[i, 0, 0] = 255          # Red stays at max
+            colormap[i, 0, 1] = 255 - 2 * (i - 128)  # Green decreases
+            colormap[i, 0, 2] = 2 * (i - 128)        # Blue increases
+    
+    depth_colormap = cv2.applyColorMap(depth, colormap)
     return depth_colormap
 
 def video_cv(video):
@@ -38,7 +50,7 @@ window_size = (projector.width, projector.height)
 depth = get_depth()
 heightmap = normalize_heightmap(depth)
 
-colored_heightmap = apply_viridis_colormap(heightmap)
+colored_heightmap = apply_custom_colormap(heightmap)
 colored_surface = pygame.surfarray.make_surface(colored_heightmap)
 
 rabbits = [Rabbit((300 + i * 20, 300)) for i in range(3)]
@@ -85,7 +97,7 @@ while running:
 
     depth = get_depth()
     heightmap = normalize_heightmap(depth)
-    colored_heightmap = apply_viridis_colormap(heightmap)
+    colored_heightmap = apply_custom_colormap(heightmap)
     colored_surface = pygame.surfarray.make_surface(colored_heightmap)
 
     screen.fill((0, 0, 0))

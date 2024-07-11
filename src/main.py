@@ -5,6 +5,7 @@ from species import Rabbit, AdvantagedRabbit, Fox
 import random
 from out import get_depth, find_projector_screen, show_image_on_projector
 import cv2
+import freenect
 
 def check_collision(species1, species2):
     distance = math.sqrt((species1.position[0] - species2.position[0]) ** 2 +
@@ -62,7 +63,9 @@ pygame.display.set_caption("Ecosystem Simulation")
 
 clock = pygame.time.Clock()
 running = True
-while running:
+while 1:
+    if freenect.sync_get_depth() is None:
+            break
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False

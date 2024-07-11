@@ -64,8 +64,10 @@ if __name__ == "__main__":
 
     clock = pygame.time.Clock()
     running = True
-    while running: 
+
+    while True:
         depth = get_depth()
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False

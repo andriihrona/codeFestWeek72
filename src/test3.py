@@ -2,6 +2,7 @@ import pygame
 import numpy as np
 import random
 import math
+from out import get_depth, find_projector_screen, show_image_on_projector, apply_colormap
 
 class Species:
     def __init__(self, name, allowed_heights_range, position, radius, color, life=100, speed=10, breeding_coefficient=1, breeding_interval=100, invalid_zone_time_limit=1000):
@@ -196,8 +197,10 @@ def create_heightmap_with_circle(size, radius):
                 heightmap[i, j] = 1
     return heightmap
 
-pygame.init()
 
+projector = find_projector_screen()
+
+pygame.init()
 
 MAX_RABBITS = 50
 MAX_ADVANTAGED_RABBITS = 50
@@ -205,8 +208,13 @@ MAX_FOXES = 10
 
 size = 1000
 radius = size // 3
-heightmap = create_heightmap_with_circle(size, radius)
-colored_heightmap = generate_colored_heightmap(heightmap)
+
+depth = get_depth()
+colored_heightmap = apply_colormap(depth)
+
+# heightmap = create_heightmap_with_circle(size, radius)
+# colored_heightmap = generate_colored_heightmap(heightmap)
+
 colored_surface = pygame.surfarray.make_surface(colored_heightmap)
 
 rabbits = [Rabbit((500 + i * 20, 400)) for i in range(10)]
@@ -220,6 +228,9 @@ pygame.display.set_caption("Ecosystem Simulation")
 clock = pygame.time.Clock()
 running = True
 while running:
+    heightmap = get_depth()
+    colored_heightmap = apply_colormap(heightmap)
+
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
@@ -298,5 +309,8 @@ while running:
 
     pygame.display.flip()
     clock.tick(10)
+
+    show_image_on_projector(colored_heightmap, projector)
+
 
 pygame.quit()

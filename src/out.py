@@ -39,58 +39,8 @@ def find_max_min_value(heightmap):
     min_value = np.min(heightmap)
     print(f"Max value: {max_value}, Min value: {min_value}")
 
-
-MIN_DEPTH = 400
-MAX_DEPTH = 550
-AVERAGE_DEPTH = MAX_DEPTH - MIN_DEPTH
-
-def apply_custom_colormap(depth, min_depth=400, max_depth=550):
-    depth = np.clip(depth.astype(np.float32), min_depth, max_depth)
-    depth = ((depth - min_depth) / (max_depth - min_depth) * 255).astype(np.uint8)
-    find_max_min_value(depth)
-    colormap = np.colormap((256, 1, 3), dtype=np.uint8)
-
-    # for i in range(256):
-    #     if i < 128:
-    #         colormap[i, 0, 0] = 255 - 2 * i  # Red decreases
-    #         colormap[i, 0, 1] = 2 * i        # Green increases
-    #         colormap[i, 0, 2] = 255          # Blue stays at max
-    #     else:
-    #         colormap[i, 0, 0] = 255          # Red stays at max
-    #         colormap[i, 0, 1] = 255 - 2 * (i - 128)  # Green decreases
-    #         colormap[i, 0, 2] = 2 * (i - 128)        # Blue increases
-    
-
-    colormap[:, 0, 0] = 255 - np.linspace(0, 255, 256)  # Red decreases from 255 to 0
-    colormap[:, 0, 1] = np.linspace(0, 255, 256)  # Green increases from 0 to 255
-    colormap[:128, 0, 2] = 255  # Blue stays at 255 for the first half
-    colormap[128:, 0, 2] = np.linspace(255, 0, 128)  # Blue decreases from 255 to 0 for the second half
-    
-    depth_colormap = cv2.applyColorMap(depth, colormap)
-    return depth_colormap
-
-def apply_custom_colormap(depth, min_depth=400, max_depth=550):
-
-    colormap = np.colormap((256, 1, 3), dtype=np.uint8)
-    colormap[:, 0, 0] = 255 - np.linspace(0, 255, 256)  # Red decreases from 255 to 0
-    colormap[:, 0, 1] = np.linspace(0, 255, 256)  # Green increases from 0 to 255
-    colormap[:128, 0, 2] = 255  # Blue stays at 255 for the first half
-    colormap[128:, 0, 2] = np.linspace(255, 0, 128)  # Blue decreases from 255 to 0 for the second half
-    
-    depth_colormap = cv2.applyColorMap(depth, colormap)
-    return depth_colormap
-
 def apply_colormap(depth, min_depth=0, max_depth=255):
     depth = np.clip(depth.astype(np.uint8), min_depth, max_depth)
-    # depth = ((depth - min_depth) / (max_depth - min_depth) * 255).astype(np.uint8)
-
-  #  blue_threshold = int(mean + min_depth / 3)
-  #  green_threshold = int(mean + max_depth / 2)
-
-   # colormap = np.zeros((256, 1, 3), dtype=np.uint8)
-   # colormap[:blue_threshold, 0, 0] = 255 #Bleu
-  #  colormap[blue_threshold:green_threshold, 0, 1] = 255 #Vert
- #   colormap[green_threshold:, 0, 2] = 255 #Rouge
 
     depth_colormap = cv2.applyColorMap(depth, cv2.COLORMAP_JET)
     depth_colormap = depth_colormap[:, :, [0, 2, 1]]
@@ -101,14 +51,8 @@ if __name__ == "__main__":
     while 1:
         if freenect.sync_get_depth() is None:
             break
-        # print('message')
         depth = get_depth()
-        vmin = np.min(depth)
-
-        #find_max_min_value(depth)
-        #depth_colormap = frame_convert.apply_viridis_colormap(depth)
         depth_colormap = apply_colormap(depth)
-        # find_max_min_value(depth_colormap)
         show_image_on_projector(depth_colormap, projector)
         if cv2.waitKey(1) & 0xFF == 27:
             break

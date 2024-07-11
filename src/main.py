@@ -13,21 +13,16 @@ def check_collision(species1, species2):
                          (species1.position[1] - species2.position[1]) ** 2)
     return distance < (species1.radius + species2.radius)
 
-def apply_custom_colormap(depth, min_depth=400, max_depth=550):
+def normalize_and_apply_colormap(depth, min_depth=400, max_depth=550):
     depth = np.clip(depth.astype(np.float32), min_depth, max_depth)
-    depth = ((depth - min_depth) / (max_depth - min_depth) * 255).astype(np.uint8)
+    depth_normalized = ((depth - min_depth) / (max_depth - min_depth) * 255).astype(np.uint8)
     colormap = np.zeros((256, 1, 3), dtype=np.uint8)
-    for i in range(256):
-        if i < 128:
-            colormap[i, 0, 0] = 255 - 2 * i  # Red decreases
-            colormap[i, 0, 1] = 2 * i        # Green increases
-            colormap[i, 0, 2] = 255          # Blue stays at max
-        else:
-            colormap[i, 0, 0] = 255          # Red stays at max
-            colormap[i, 0, 1] = 255 - 2 * (i - 128)  # Green decreases
-            colormap[i, 0, 2] = 2 * (i - 128)        # Blue increases
+    colormap[:, 0, 0] = 255 - np.linspace(0, 255, 256)  # Red decreases from 255 to 0
+    colormap[:, 0, 1] = np.linspace(0, 255, 256)  # Green increases from 0 to 255
+    colormap[:128, 0, 2] = 255  # Blue stays at 255 for the first half
+    colormap[128:, 0, 2] = np.linspace(255, 0, 128)  # Blue decreases from 255 to 0 for the second half
     
-    depth_colormap = cv2.applyColorMap(depth, colormap)
+    depth_colormap = cv2.applyColorMap(depth_normalized, colormap)
     return depth_colormap
 
 def apply_colormap(depth, min_depth, max_depth, mean):
@@ -48,16 +43,6 @@ def apply_colormap(depth, min_depth, max_depth, mean):
 def video_cv(video):
     return video[:, :, ::-1]  # RGB -> BGR
 
-def normalize_heightmap(depth_map):
-    if len(depth_map.shape) == 3 and depth_map.shape[2] == 3:
-        depth_map_gray = cv2.cvtColor(depth_map, cv2.COLOR_RGB2GRAY)
-    else:
-        depth_map_gray = depth_map
-    min_depth = np.min(depth_map_gray)
-    max_depth = np.max(depth_map_gray)
-    heightmap = ((depth_map_gray - min_depth) / (max_depth - min_depth) * 255).astype(np.uint8)
-    return heightmap
-
 if __name__ == "__main__":
     pygame.init()
 
@@ -65,9 +50,7 @@ if __name__ == "__main__":
     window_size = (projector.width, projector.height)
 
     depth = get_depth()
-    heightmap = normalize_heightmap(depth)
-
-    colored_heightmap = apply_custom_colormap(depth)
+    colored_heightmap = normalize_and_apply_colormap(depth)
     colored_surface = pygame.surfarray.make_surface(colored_heightmap)
 
     rabbits = [Rabbit((300 + i * 20, 300)) for i in range(3)]
@@ -80,7 +63,7 @@ if __name__ == "__main__":
     clock = pygame.time.Clock()
     running = True
 
-    while True:
+    while running:
         depth = get_depth()
 
         for event in pygame.event.get():
@@ -91,14 +74,13 @@ if __name__ == "__main__":
         advantaged_rabbits = [advantaged_rabbit for advantaged_rabbit in advantaged_rabbits if not advantaged_rabbit.age()]
         foxes = [fox for fox in foxes if not fox.age()]
 
-        # heightmap = depth
         for fox in foxes:
-            fox.pursue(rabbits + advantaged_rabbits, heightmap)
+            fox.pursue(rabbits + advantaged_rabbits, depth)
 
         for rabbit in rabbits:
-            rabbit.flee(foxes, heightmap)
+            rabbit.flee(foxes, depth)
         for advantaged_rabbit in advantaged_rabbits:
-            advantaged_rabbit.flee(foxes, heightmap)
+            advantaged_rabbit.flee(foxes, depth)
 
         def breed_species(species_list):
             new_offsprings = []
@@ -117,8 +99,7 @@ if __name__ == "__main__":
         advantaged_rabbits = [advantaged_rabbit for advantaged_rabbit in advantaged_rabbits if not any(check_collision(advantaged_rabbit, fox) for fox in foxes)]
 
         depth = get_depth()
-        heightmap = normalize_heightmap(depth)
-        colored_heightmap = apply_custom_colormap(heightmap)
+        colored_heightmap = normalize_and_apply_colormap(depth)
         colored_surface = pygame.surfarray.make_surface(colored_heightmap)
 
         screen.fill((0, 0, 0))

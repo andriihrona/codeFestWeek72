@@ -2,9 +2,9 @@ import pygame
 import numpy as np
 import random
 import math
-from out import get_depth, find_projector_screen, show_image_on_projector, apply_colormap
+from out import get_depth, find_projector_screen, show_image_on_projector, apply_colormap, normalise_depth
 
-WIDTH = 640
+WIDTH = 480
 HEIGHT = 480
 
 class Species:
@@ -126,6 +126,10 @@ class Rabbit(Species):
             new_position = self.position
 
         new_x, new_y = new_position
+        if new_y > WIDTH:
+            new_y = WIDTH - 1
+        if new_x > HEIGHT:
+            new_x = HEIGHT - 1
         if self.can_walk_on(heightmap[new_y, new_x]):
             self.position = new_position
             self.time_in_invalid_zone = 0  # Reset timer when moving to a valid zone
@@ -236,8 +240,9 @@ pygame.display.set_caption("Ecosystem Simulation")
 clock = pygame.time.Clock()
 running = True
 while running:
-    heightmap = get_depth()
-    colored_heightmap = apply_colormap(heightmap)
+    depth = get_depth()
+    heightmap = normalise_depth(depth)
+    colored_heightmap = apply_colormap(depth)
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -246,7 +251,6 @@ while running:
     rabbits = [rabbit for rabbit in rabbits if not rabbit.age()]
     advantaged_rabbits = [advantaged_rabbit for advantaged_rabbit in advantaged_rabbits if not advantaged_rabbit.age()]
     foxes = [fox for fox in foxes if not fox.age()]
-
 
     for fox in foxes:
             fox.pursue(rabbits, heightmap)
@@ -259,13 +263,13 @@ while running:
     for fox in foxes:
         fox.pursue(rabbits + advantaged_rabbits, heightmap)
 
-    rabbit_icon = pygame.image.load("/Users/admin/Desktop/Epita/COFE/whiterabbit.png")
+    rabbit_icon = pygame.image.load("/home/thomas/work/CodeFest/codeFestWeek72/src/whiterabbit.png")
     rabbit_icon = pygame.transform.scale(rabbit_icon, (20, 20))
 
-    advantaged_rabbit_icon = pygame.image.load("/Users/admin/Desktop/Epita/COFE/blackrabbit.png")
+    advantaged_rabbit_icon = pygame.image.load("/home/thomas/work/CodeFest/codeFestWeek72/src/blackrabbit.png")
     advantaged_rabbit_icon = pygame.transform.scale(advantaged_rabbit_icon, (20, 20))
 
-    fox_icon = pygame.image.load("/Users/admin/Desktop/Epita/COFE/fox3.png")
+    fox_icon = pygame.image.load("/home/thomas/work/CodeFest/codeFestWeek72/src/fox3.png")
     fox_icon = pygame.transform.scale(fox_icon, (20, 20))
 
     new_rabbits = []

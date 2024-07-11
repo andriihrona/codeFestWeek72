@@ -39,12 +39,48 @@ def find_max_min_value(heightmap):
     min_value = np.min(heightmap)
     print(f"Max value: {max_value}, Min value: {min_value}")
 
+# def apply_colormap(depth, min_depth=0, max_depth=255, mean=100):
+#     depth = np.clip(depth.astype(np.uint8), min_depth, max_depth)
+#     depth = ((depth - min_depth) / (max_depth - min_depth) * 255).astype(np.uint8)
+
+#     blue_threshold = int(mean + min_depth / 3)
+#     green_threshold = int(mean + max_depth / 2)
+
+#     colormap = np.zeros((256, 1, 3), dtype=np.uint8)
+#     colormap[:blue_threshold, 0, 2] = 255 #Bleu
+#     colormap[blue_threshold:green_threshold, 0, 1] = 255 #Vert
+#     colormap[green_threshold:, 0, 0] = 255 #Rouge
+
+#     depth_colormap = cv2.applyColorMap(depth, colormap)
+#     #RGB 012
+#     #
+#     depth_colormap = depth_colormap[:,:, [2, 0, 1]]
+#     return depth_colormap 
+# # 
 def apply_colormap(depth, min_depth=0, max_depth=255):
     depth = np.clip(depth.astype(np.uint8), min_depth, max_depth)
+    # depth = ((depth - min_depth) / (max_depth - min_depth) * 255).astype(np.uint8)
 
-    depth_colormap = cv2.applyColorMap(depth, cv2.COLORMAP_JET)
+  #  blue_threshold = int(mean + min_depth / 3)
+  #  green_threshold = int(mean + max_depth / 2)
+
+   # colormap = np.zeros((256, 1, 3), dtype=np.uint8)
+   # colormap[:blue_threshold, 0, 0] = 255 #Bleu
+  #  colormap[blue_threshold:green_threshold, 0, 1] = 255 #Vert
+ #   colormap[green_threshold:, 0, 2] = 255 #Rouge
+
+    depth_colormap = cv2.applyColorMap(depth, cv2.COLORMAP_TURBO)
     depth_colormap = depth_colormap[:, :, [0, 2, 1]]
     return depth_colormap
+
+def normalise_depth(depth_map):
+    print('shape', depth_map.shape)
+    c = depth_map[:, :]
+    c[(c >= 0) & (c <= 85)] = 0
+    c[(c >= 86) & (c <= 145)] = 1
+    c[c > 145] = 2
+    depth_map[:, :] = c
+    return depth_map
 
 if __name__ == "__main__":
     projector = find_projector_screen()
@@ -53,6 +89,7 @@ if __name__ == "__main__":
             break
         depth = get_depth()
         depth_colormap = apply_colormap(depth)
+        find_max_min_value(depth_colormap)
         show_image_on_projector(depth_colormap, projector)
         if cv2.waitKey(1) & 0xFF == 27:
             break

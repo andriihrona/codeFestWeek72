@@ -13,7 +13,7 @@ def check_collision(species1, species2):
                          (species1.position[1] - species2.position[1]) ** 2)
     return distance < (species1.radius + species2.radius)
 
-def apply_custom_colormap(depth, min_depth=0, max_depth=550):
+def apply_custom_colormap(depth, min_depth=400, max_depth=550):
     depth = np.clip(depth.astype(np.float32), min_depth, max_depth)
     depth = ((depth - min_depth) / (max_depth - min_depth) * 255).astype(np.uint8)
     colormap = np.zeros((256, 1, 3), dtype=np.uint8)
@@ -50,7 +50,7 @@ if __name__ == "__main__":
     window_size = (projector.width, projector.height)
 
     depth = get_depth()
-    # heightmap = normalize_heightmap(depth)
+    heightmap = normalize_heightmap(depth)
 
     colored_heightmap = apply_custom_colormap(depth)
     colored_surface = pygame.surfarray.make_surface(colored_heightmap)
@@ -64,7 +64,7 @@ if __name__ == "__main__":
 
     clock = pygame.time.Clock()
     running = True
-    while 1: 
+    while running: 
         depth = get_depth()
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -74,7 +74,7 @@ if __name__ == "__main__":
         advantaged_rabbits = [advantaged_rabbit for advantaged_rabbit in advantaged_rabbits if not advantaged_rabbit.age()]
         foxes = [fox for fox in foxes if not fox.age()]
 
-        heightmap = depth
+        # heightmap = depth
         for fox in foxes:
             fox.pursue(rabbits + advantaged_rabbits, heightmap)
 
@@ -100,8 +100,8 @@ if __name__ == "__main__":
         advantaged_rabbits = [advantaged_rabbit for advantaged_rabbit in advantaged_rabbits if not any(check_collision(advantaged_rabbit, fox) for fox in foxes)]
 
         depth = get_depth()
-        # heightmap = normalize_heightmap(depth)
-        colored_heightmap = apply_custom_colormap(depth)
+        heightmap = normalize_heightmap(depth)
+        colored_heightmap = apply_custom_colormap(heightmap)
         colored_surface = pygame.surfarray.make_surface(colored_heightmap)
 
         screen.fill((0, 0, 0))

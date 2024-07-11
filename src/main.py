@@ -50,6 +50,7 @@ if __name__ == "__main__":
     window_size = (projector.width, projector.height)
 
     depth = get_depth()
+    heightmap = depth
     # heightmap = normalize_heightmap(depth)
 
     colored_heightmap = apply_custom_colormap(depth)
@@ -64,8 +65,7 @@ if __name__ == "__main__":
 
     clock = pygame.time.Clock()
     running = True
-    while 1: 
-        depth = get_depth()
+    while True: 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
@@ -74,7 +74,6 @@ if __name__ == "__main__":
         advantaged_rabbits = [advantaged_rabbit for advantaged_rabbit in advantaged_rabbits if not advantaged_rabbit.age()]
         foxes = [fox for fox in foxes if not fox.age()]
 
-        heightmap = depth
         for fox in foxes:
             fox.pursue(rabbits + advantaged_rabbits, heightmap)
 

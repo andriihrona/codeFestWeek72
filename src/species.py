@@ -2,7 +2,7 @@ import random
 import numpy as np
 
 class Species:
-    def __init__(self, name, allowed_heights_range, position, radius, color, life=100, speed=10, breeding_coefficient=1, breeding_interval=100, invalid_zone_time_limit=10):
+    def __init__(self, name, allowed_heights_range, position, radius, color, life=100, speed=10, breeding_coefficient=1, breeding_interval=100, invalid_zone_time_limit=1000):
         self.name = name
         self.allowed_heights_range = allowed_heights_range
         self.position = position
@@ -59,7 +59,7 @@ class Species:
 
 class Rabbit(Species):
     def __init__(self, position, fleeing_radius=25):
-        super().__init__("Rabbit", (0, 255), position, 8, (255, 255, 255), life=80, speed=10, breeding_coefficient=1, breeding_interval=50, invalid_zone_time_limit=10)
+        super().__init__("Rabbit", (0, 255), position, 8, (255, 255, 255), life=80, speed=10, breeding_coefficient=1, breeding_interval=50, invalid_zone_time_limit=1000)
         self.fleeing_radius = fleeing_radius
 
     def flee(self, foxes, heightmap):
@@ -101,7 +101,7 @@ class AdvantagedRabbit(Rabbit):
 
 class Fox(Species):
     def __init__(self, position, hunting_radius=50):
-        super().__init__("Fox", (0, 255), position, 10, (255, 0, 0), life=100, speed=15, breeding_coefficient=1, breeding_interval=60, invalid_zone_time_limit=10)
+        super().__init__("Fox", (0, 255), position, 10, (255, 0, 0), life=100, speed=15, breeding_coefficient=1, breeding_interval=60, invalid_zone_time_limit=1000)
         self.hunting_radius = hunting_radius
 
     def pursue(self, rabbits, heightmap):

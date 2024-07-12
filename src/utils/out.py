@@ -57,26 +57,13 @@ def normalize(depth, max_cm=45):
 
 def apply_colormap(depth, min_depth=0, max_depth=255):
     depth = np.clip(depth.astype(np.uint8), min_depth, max_depth)
-    # max = np.max(depth)
-    # min = np.min(depth)
-    # depth = (depth - min / max - min) * 255
-    # depth = depth.astype(np.uint8)
-
     # depth = normalize(depth)
-    # print('depth_colormap: ', np.max(depth), np.min(depth))
     depth_colormap = cv2.applyColorMap(depth, cv2.COLORMAP_TURBO)
     depth_colormap = depth_colormap[:, :, [0, 2, 1]]
     return depth_colormap
 
-def normalise_depth(depth_map, min_depth=0, max_depth=255):
-    # depth_map = np.clip(depth_map.astype(np.uint8), min_depth, max_depth)
-
+def normalise_depth(depth_map):
     # depth_map = normalize(depth_map)
-
-    # max = np.max(depth_map)
-    # min = np.min(depth_map)
-    # depth_map = (depth_map - min / max - min) * 255 
-    # depth_map = depth_map.astype(np.uint8)
 
     c = depth_map[:, :]
 

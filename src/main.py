@@ -8,7 +8,8 @@ from species.Species import *
 from species.Rabbit import *
 from species.AdvantagedRabbit import *
 from species.Fox import *
-from config import MAX_RABBITS, MAX_ADVANTAGED_RABBITS, MAX_FOXES, SIZE
+from config import MAX_RABBITS, MAX_ADVANTAGED_RABBITS, MAX_FOXES, WIDTH_WIND_SIZE, HEIGHT_WIND_SIZE
+# from utils.calibration import run_calibration
 
 def check_collision(species1, species2):
     distance = math.sqrt((species1.position[0] - species2.position[0]) ** 2 +
@@ -16,6 +17,8 @@ def check_collision(species1, species2):
     return distance < (species1.radius + species2.radius)
 
 if __name__ == "__main__":
+    # run_calibration()
+
     projector = find_projector_screen()
 
     pygame.init()
@@ -23,8 +26,8 @@ if __name__ == "__main__":
     rabbits = [Rabbit((500 + i * 20, 400)) for i in range(10)] #10
     advantaged_rabbits = [AdvantagedRabbit((400 + i * 20, 500)) for i in range(8)] #8
     foxes = [Fox((250-i*50, 300)) for i in range(2)]
-    
-    window_size = (SIZE, SIZE)
+
+    window_size = (HEIGHT_WIND_SIZE, WIDTH_WIND_SIZE)
     screen = pygame.display.set_mode(window_size)
     pygame.display.set_caption("Ecosystem Simulation")
 
@@ -93,7 +96,7 @@ if __name__ == "__main__":
         if len(foxes) > 0 and len(rabbits) == 0 and len(advantaged_rabbits) == 0:
             foxes = []  # All foxes die ENDGAME
         elif len(foxes) == 0 and (len(rabbits) > 0 or len(advantaged_rabbits) > 0):
-            foxes.extend([Fox((random.randint(0, SIZE), random.randint(0, SIZE))) for _ in range(2)])  # Two foxes pop
+            foxes.extend([Fox((random.randint(0, HEIGHT_WIND_SIZE), random.randint(0, WIDTH_WIND_SIZE))) for _ in range(2)])  # Two foxes pop
 
         screen.fill((0, 0, 0))
         screen.blit(colored_surface, (0, 0))
@@ -108,7 +111,6 @@ if __name__ == "__main__":
         pygame.display.flip()
 
         frame = pygame.surfarray.array3d(screen)
-        frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
         show_image_on_projector(frame, projector)
 
         clock.tick(100)

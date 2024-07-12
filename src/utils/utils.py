@@ -1,5 +1,7 @@
 import numpy as np
-from config import WIDTH, HEIGHT
+
+WIDTH = 480
+HEIGHT = 480
 
 def find_max_min_value(heightmap):
     max_value = np.max(heightmap)

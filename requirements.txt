@@ -1,3 +1,5 @@
 numpy
 pygame
-random
+Cython==0.29.37
+opencv-python
+screeninfo

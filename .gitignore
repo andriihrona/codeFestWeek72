@@ -1,0 +1,7 @@
+libfreenect
+
+src/__pycache__
+src/utils/__pycache__
+src/species/__pycache__/
+
+.vscode
